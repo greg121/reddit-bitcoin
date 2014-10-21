@@ -3,7 +3,7 @@ import datetime
 
 r = praw.Reddit(user_agent='get_me_reddit')
 i = 0
-submissions = r.get_subreddit('bitcoin').get_new(limit=100)
+submissions = r.get_subreddit('bitcoin').get_new(limit=2000)
 for s in submissions:
   i = i + 1
   print str(s.ups) +" - "+ s.title
@@ -11,6 +11,6 @@ for s in submissions:
   for c in flat_comments:
     if isinstance(c, praw.objects.Comment):
       print str(c.created_utc) + " " + datetime.datetime.fromtimestamp(c.created_utc).strftime('%Y-%m-%d %H:%M:%S')
-      print "   " + str(c.ups) + " - " + c.body
+      print "---" + str(c.ups) + " - " + c.body
 
 print i
