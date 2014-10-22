@@ -6,11 +6,11 @@ import praw
 import datetime
 
 #quelle: http://stackoverflow.com/a/622308/1018288
-db = MySQLdb.connect(host="213.165.79.250", # your host, usually localhost
-                     user="reddit", # your username
-                      passwd="beamer", # your password
+db = MySQLdb.connect(host="213.165.79.250", 
+                     user="reddit", 
+                      passwd="beamer",
                       db="gp_reddit",
-                      charset="utf8") # name of the data base
+                      charset="utf8") 
 
 # you must create a Cursor object. It will let you execute all the queries you need
 cur = db.cursor()
