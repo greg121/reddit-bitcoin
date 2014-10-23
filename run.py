@@ -4,13 +4,17 @@
 import MySQLdb
 import praw
 import datetime
+import ConfigParser
+
+config = ConfigParser.RawConfigParser()
+config.read('config.ini')
 
 #quelle: http://stackoverflow.com/a/622308/1018288
-db = MySQLdb.connect(host="213.165.79.250", 
-                     user="reddit", 
-                      passwd="beamer",
-                      db="gp_reddit",
-                      charset="utf8") 
+db = MySQLdb.connect(host=config.get('mysql', 'host'),
+                     user=config.get('mysql', 'user'),
+                     passwd=config.get('mysql', 'passwd'),
+                     db=config.get('mysql', 'db'),
+                     charset="utf8")
 
 # you must create a Cursor object. It will let you execute all the queries you need
 cur = db.cursor()
