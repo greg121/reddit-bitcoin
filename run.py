@@ -27,7 +27,7 @@ for s in submissions:
       print "-------------------------"
       date = datetime.datetime.utcfromtimestamp(s.created_utc).strftime('%Y-%m-%d %H:%M:%S')
       print str(s.created_utc) + " " + date + " " + str(s.id)
-      print str(s.ups) +" - "+ s.title
+      print str(s.ups) +" - "+ s.title.encode('ascii', 'ignore')
       sql = "INSERT INTO `submissions`(`id`, `timestamp`, `date`, `title`, `body`, `upvotes`, `eng_pos`, `eng_neg`, `score`) \
       VALUES ('%s', '%i', '%s', '%s', '%s', '%i', '%i', '%i', '%i' )" % \
       (str(s.id),int(s.created_utc),date,s.title.replace("'","''"),s.selftext.replace("'","''"),s.ups,0,0,0)
@@ -40,7 +40,7 @@ for s in submissions:
           if isinstance(c, praw.objects.Comment):
               date = datetime.datetime.utcfromtimestamp(c.created_utc).strftime('%Y-%m-%d %H:%M:%S')
               print str(c.created_utc) + " " + date + " " + str(c.id)
-              print "---" + str(c.ups) + " - " + c.body
+              print "---" + str(c.ups) + " - " + c.body.encode('ascii', 'ignore')
               sql = "INSERT INTO `submissions`(`id`, `timestamp`, `date`, `title`, `body`, `upvotes`, `eng_pos`, `eng_neg`, `score`) \
               VALUES ('%s', '%i', '%s', '%s', '%s', '%i', '%i', '%i', '%i' )" % \
               (str(c.id),int(c.created_utc),date,'',c.body.replace("'","''"),c.ups,0,0,0)
