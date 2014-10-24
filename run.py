@@ -42,10 +42,22 @@ def getSubmissions(start):
     return submissions
 
 def escapeSqlProblems(string):
-    string = string.replace("'","''")
+    result = string.replace("'","''")
     # adressiert das backslash problem
     # möglicherweise noch probleme mit einem String + backslash am Ende
-    string = string.replace('\\',' ')
+    result = result.replace('\\',' ')
+    return result
+
+def tryAndCatch():
+    for attempt in range(10):
+        try:
+            submissions = getSubmissions(start)
+        except Exception as e:
+            warning(e)
+            time.sleep(4)
+        else:
+            break
+
 
 def main():
     db = connectToDb()
@@ -66,10 +78,10 @@ def main():
 
         for s in submissions:
             i = i + 1
-            print(datetime.datetime.now(), "-------------------------")
+            #print(datetime.datetime.now(), "-------------------------")
             date = datetime.datetime.utcfromtimestamp(s.created_utc).strftime('%Y-%m-%d %H:%M:%S')
-            print (str(s.created_utc), date, str(s.id))
-            print (str(s.ups), "-", s.title.encode('ascii', 'ignore'))
+            #print (str(s.created_utc), date, str(s.id))
+            #print (str(s.ups), "-", s.title.encode('ascii', 'ignore'))
             addToDatabase(db,cur,str(s.id),int(s.created_utc),date,escapeSqlProblems(s.title),escapeSqlProblems(s.selftext),s.ups,'',0,0,0)
 
             # probier 10x reddit zu erreichen
@@ -87,8 +99,8 @@ def main():
                 #nochmal nachlesen: Problem "morecomments"
                 if isinstance(c, praw.objects.Comment):
                     date = datetime.datetime.utcfromtimestamp(c.created_utc).strftime('%Y-%m-%d %H:%M:%S')
-                    print(str(c.created_utc), date, str(c.id))
-                    print ("---", str(c.ups), c.body.encode('ascii', 'ignore'))
+                    #print(str(c.created_utc), date, str(c.id))
+                    #print ("---", str(c.ups), c.body.encode('ascii', 'ignore'))
                     addToDatabase(db,cur,str(c.id),int(c.created_utc),date,'',escapeSqlProblems(c.body),c.ups,'',0,0,0)
         # rewind please! 1 day
         start = start - 86601
