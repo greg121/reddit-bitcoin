@@ -21,7 +21,7 @@ def connectToDb():
     db = MySQLdb.connect(host=config.get('mysql', 'host'),
                          user=config.get('mysql', 'user'),
                          passwd=config.get('mysql', 'passwd'),
-                         db=config.get('mysql', 'db'),
+                         db=config.get('mysql', 'db_test'),
                          charset="utf8")
 
     return db
@@ -30,7 +30,6 @@ def addToDatabase(db, cur, id, created, date, link, title, body, ups, proc_on, p
     sql = "INSERT INTO `submissions`(`id`, `timestamp`, `date`, `link`, `title`, `body`, `upvotes`, `processed_on`, `eng_pos`, `eng_neg`, `score`) \
     VALUES ('%s', '%i', '%s', '%s', '%s', '%s', '%i', '%s', '%i', '%i', '%i' )" % \
     (id, created, date, link, title, body, ups, proc_on, pos, neg, score)
-    print(link)
     cur.execute(sql)
     db.commit()
 
@@ -53,9 +52,9 @@ def main():
     db = connectToDb()
     # you must create a Cursor object. It will let you execute all the queries you need
     cur = db.cursor()
-    i = 0
     start = 1413581567
     while 1:
+        i = 0
         # probier 10x reddit zu erreichen
         for attempt in range(10):
             try:
@@ -77,6 +76,8 @@ def main():
             # probier 10x reddit zu erreichen
             for attempt in range(10):
                 try:
+                    # ersetze die more_comments objekte mit den tatsächlichen Kommentaren
+                    s.replace_more_comments(limit=None, threshold=0)
                     # problem ist die Struktur von reddit, was hier umgangen wird, indem alles platt geklopft wird
                     flat_comments = praw.helpers.flatten_tree(s.comments)
                 except Exception as e:
@@ -87,11 +88,11 @@ def main():
 
             for c in flat_comments:
                 #nochmal nachlesen: Problem "morecomments"
-                if isinstance(c, praw.objects.Comment):
-                    date = datetime.datetime.utcfromtimestamp(c.created_utc).strftime('%Y-%m-%d %H:%M:%S')
-                    #print(str(c.created_utc), date, str(c.id))
-                    #print ("---", str(c.ups), c.body.encode('ascii', 'ignore'))
-                    addToDatabase(db,cur,str(c.id),int(c.created_utc),date,c.permalink,'',escapeSqlProblems(c.body),c.ups,'',0,0,0)
+                #if isinstance(c, praw.objects.Comment):
+                date = datetime.datetime.utcfromtimestamp(c.created_utc).strftime('%Y-%m-%d %H:%M:%S')
+                #print(str(c.created_utc), date, str(c.id))
+                #print ("---", str(c.ups), c.body.encode('ascii', 'ignore'))
+                addToDatabase(db,cur,str(c.id),int(c.created_utc),date,c.permalink,'',escapeSqlProblems(c.body),c.ups,'',0,0,0)
         # rewind please! half a day = 43200sec
         start = start - 43201
         print("Anzahl submissions:", i)
