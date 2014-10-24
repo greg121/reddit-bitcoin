@@ -26,6 +26,13 @@ def connectToDb():
 
     return db
 
+def addToDatabase(db, cur, id, created, date, title, body, ups, proc_on, pos, neg, score):
+    sql = "INSERT INTO `submissions`(`id`, `timestamp`, `date`, `title`, `body`, `upvotes`, `processed_on`, `eng_pos`, `eng_neg`, `score`) \
+    VALUES ('%s', '%i', '%s', '%s', '%s', '%i', '%s', '%i', '%i', '%i' )" % \
+    (id, created, date, title, body, ups, proc_on, pos, neg, score)
+    cur.execute(sql)
+    db.commit()
+
 def getSubmissions(start):
     r = praw.Reddit(user_agent='get_me_reddit')
     # pro Tag eine Abfrage - quelle: http://www.reddit.com/r/redditdev/comments/2j6inf/how_to_download_submissions_of_a_specified_period/
@@ -33,6 +40,12 @@ def getSubmissions(start):
     print("von", datetime.datetime.utcfromtimestamp(start-86600).strftime('%Y-%m-%d %H:%M:%S'), "bis", datetime.datetime.utcfromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
     submissions = r.search(time_search_param, sort='new', subreddit='bitcoin', syntax='cloudsearch')
     return submissions
+
+def escapeSqlProblems(string):
+    string = string.replace("'","''")
+    # adressiert das backslash problem
+    # möglicherweise noch probleme mit einem String + backslash am Ende
+    string = string.replace('\\',' ')
 
 def main():
     db = connectToDb()
@@ -57,11 +70,8 @@ def main():
             date = datetime.datetime.utcfromtimestamp(s.created_utc).strftime('%Y-%m-%d %H:%M:%S')
             print (str(s.created_utc), date, str(s.id))
             print (str(s.ups), "-", s.title.encode('ascii', 'ignore'))
-            sql = "INSERT INTO `submissions`(`id`, `timestamp`, `date`, `title`, `body`, `upvotes`, `processed_on`, `eng_pos`, `eng_neg`, `score`) \
-            VALUES ('%s', '%i', '%s', '%s', '%s', '%i', '%s', '%i', '%i', '%i' )" % \
-            (str(s.id),int(s.created_utc),date,s.title.replace("'","''"),s.selftext.replace("'","''"),s.ups,'',0,0,0)
-            cur.execute(sql)
-            db.commit()
+            addToDatabase(db,cur,str(s.id),int(s.created_utc),date,escapeSqlProblems(s.title),escapeSqlProblems(s.selftext),s.ups,'',0,0,0)
+
             # probier 10x reddit zu erreichen
             for attempt in range(10):
                 try:
@@ -79,12 +89,8 @@ def main():
                     date = datetime.datetime.utcfromtimestamp(c.created_utc).strftime('%Y-%m-%d %H:%M:%S')
                     print(str(c.created_utc), date, str(c.id))
                     print ("---", str(c.ups), c.body.encode('ascii', 'ignore'))
-                    sql = "INSERT INTO `submissions`(`id`, `timestamp`, `date`, `title`, `body`, `upvotes`, `processed_on`, `eng_pos`, `eng_neg`, `score`) \
-                    VALUES ('%s', '%i', '%s', '%s', '%s', '%i', '%s', '%i', '%i', '%i' )" % \
-                    (str(c.id),int(c.created_utc),date,'',c.body.replace("'","''"),c.ups,'',0,0,0)
-                    cur.execute(sql)
-                    db.commit()
-        # einen Tag zurück, bitte!
+                    addToDatabase(db,cur,str(c.id),int(c.created_utc),date,'',escapeSqlProblems(c.body),c.ups,'',0,0,0)
+        # rewind please! 1 day
         start = start - 86601
         print("Anzahl submissions:", i)
 
