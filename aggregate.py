@@ -3,10 +3,10 @@
 
 import dbhelper
 
-def addToDatabase(db, cur, timestamp, price, volume):
-    sql = "INSERT INTO `bitcoin-price-5min`(`id`, `timestamp`, `price`, `volume`) \
-    VALUES (NULL, '%s', '%s', '%s')" % \
-    (timestamp, price, volume)
+def addToDatabase(db, cur, timestamp, open_, high, low, close, volume):
+    sql = "INSERT INTO `bitcoin-price-5min`(`id`, `timestamp`, `open`, `high`, `low`, `close`, `volume`) \
+    VALUES (NULL, '%s', '%s', '%s', '%s', '%s', '%s')" % \
+    (timestamp, open_, high, low, close, volume)
     cur.execute(sql)
     db.commit()
 
@@ -18,18 +18,35 @@ def queryPrices(db, cur, start):
     return cur
 
 def main():
-    start = 1315922000
-    db = dbhelper.connectToDb('mysql')
+    #start = 1315922000
+    start = 1414200300
+    db = dbhelper.connectToDb('reddit_test')
     cur = db.cursor()
-    while 1:
+    #for x in range(328289):
+    for x in range(410):
         cur = queryPrices(db, cur, start)
         result = cur.fetchall()
+        priceArray = []
+        volume = 0
+
         if (cur.rowcount != 0):
-            print result[int(cur.rowcount)-1][1]
-            addToDatabase(db, cur, start, result[int(cur.rowcount)-1][2], result[int(cur.rowcount)-1][3])
+            for y in range(int(cur.rowcount)):
+                priceArray.append(result[y][2])
+                volume = volume + result[y][3]
+            openPrice = priceArray[0]
+            highPrice = max(priceArray)
+            lowPrice = min(priceArray)
+            closePrice = priceArray[len(priceArray)-1]
+
+            # TODO volume aufaddieren?
+            addToDatabase(db, cur, start, openPrice, highPrice, lowPrice, closePrice, volume)
             start = start + 300
+
         else:
-            break
+            # hier bitte vorherigen wert einfügen, falls 5minuten nix passiert ist
+            # hier volume beachten
+            addToDatabase(db, cur, start, openPrice, highPrice, lowPrice, closePrice, volume)
+            start = start + 300
     db.close()
 
 if __name__ == '__main__':
