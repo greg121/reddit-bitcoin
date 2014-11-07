@@ -4,7 +4,7 @@
 import dbhelper
 
 def addToDatabase(db, cur, timestamp, open_, high, low, close, volume):
-    sql = "INSERT INTO `bitcoin-price-5min`(`id`, `timestamp`, `open`, `high`, `low`, `close`, `volume`) \
+    sql = "INSERT INTO `bitcoin-price-15min`(`id`, `timestamp`, `open`, `high`, `low`, `close`, `volume`) \
     VALUES (NULL, '%s', '%s', '%s', '%s', '%s', '%s')" % \
     (timestamp, open_, high, low, close, volume)
     cur.execute(sql)
@@ -12,18 +12,18 @@ def addToDatabase(db, cur, timestamp, open_, high, low, close, volume):
 
 def queryPrices(db, cur, start):
     sql = "SELECT * FROM `bitcoin-price` WHERE `timestamp` BETWEEN '%i' AND '%i'" % \
-    (start, start+300)
+    (start, start+900)
     cur.execute(sql)
     db.commit()
     return cur
 
 def main():
-    #start = 1315922000
-    start = 1414200300
+    start = 1315922000
+    #start = 1414200300
     db = dbhelper.connectToDb('reddit_test')
     cur = db.cursor()
-    #for x in range(328289):
-    for x in range(410):
+    for x in range(109430):
+    #for x in range(410):
         cur = queryPrices(db, cur, start)
         result = cur.fetchall()
         priceArray = []
@@ -40,13 +40,13 @@ def main():
 
             # TODO volume aufaddieren?
             addToDatabase(db, cur, start, openPrice, highPrice, lowPrice, closePrice, volume)
-            start = start + 300
+            start = start + 900
 
         else:
             # hier bitte vorherigen wert einfügen, falls 5minuten nix passiert ist
             # hier volume beachten
             addToDatabase(db, cur, start, openPrice, highPrice, lowPrice, closePrice, volume)
-            start = start + 300
+            start = start + 900
     db.close()
 
 if __name__ == '__main__':
