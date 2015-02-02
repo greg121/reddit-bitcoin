@@ -4,10 +4,11 @@
 import dbhelper
 from datetime import timedelta, datetime
 
+#datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S') um in datetime umzuwandeln
 def addToDatabase(db, cur, timestamp, open_, high, low, close, volume):
     sql = "INSERT INTO `bitcoin-price-1d`(`id`, `timestamp`, `open`, `high`, `low`, `close`, `volume`) \
     VALUES (NULL, '%s', '%s', '%s', '%s', '%s', '%s')" % \
-    (datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S'), open_, high, low, close, volume)
+    (timestamp, open_, high, low, close, volume)
     cur.execute(sql)
     db.commit()
 
