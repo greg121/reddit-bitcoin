@@ -1,12 +1,18 @@
-import praw
-import datetime
-from pprint import pprint
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-r = praw.Reddit('whatevs')
-submission = r.get_submission(submission_id = "2gn66w")
-flat_comments = praw.helpers.flatten_tree(submission.comments)
-for c in flat_comments:
-  if isinstance(c, praw.objects.Comment):
-    print str(c.created_utc) + " " + datetime.datetime.fromtimestamp(c.created_utc).strftime('%Y-%m-%d %H:%M:%S')
-    print c.body
-    print c.ups
+import re
+import sys
+sys.path.insert(0, '/home/gregor/reddit/senti')
+import sentistrength
+import dbhelper
+
+def main():
+    db = dbhelper.connectToDb("mysql")
+    cur = db.cursor()
+    cur.execute("SELECT * FROM `submissions`")
+    numrows = cur.rowcount
+    return numrows
+
+if __name__ == '__main__':
+    main()
