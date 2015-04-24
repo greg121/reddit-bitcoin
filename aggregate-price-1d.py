@@ -21,11 +21,9 @@ def queryPrices(db, cur, start):
 
 def main():
     #1325376000 = 2012-01-01 00:00:00
-    #1390950000 = 2014-01-29 00:00:00
     start = 1325376000
     db = dbhelper.connectToDb('mysql')
     cur = db.cursor()
-    #for x in range(50):
     for x in range(1200):
         print start
         cur = queryPrices(db, cur, start)
@@ -42,17 +40,11 @@ def main():
             lowPrice = min(priceArray)
             closePrice = priceArray[len(priceArray)-1]
 
-            addToDatabase(db, cur, start, openPrice, highPrice, lowPrice, closePrice, volume)
+            addToDatabase(db, cur, datetime.fromtimestamp(int(start)).strftime('%Y-%m-%d %H:%M:%S'), openPrice, highPrice, lowPrice, closePrice, volume)
             start = start + 86400
-            #summer time: at 1396134000 calculate 1h less
-            #if (start == 1396393200):
-            #    start = start + 601200
-            #else:
-            #    start = start + 604800
-
         else:
             #für zwischendurch, wenn daten fehlen
-            addToDatabase(db, cur, start, openPrice, highPrice, lowPrice, closePrice, volume)
+            addToDatabase(db, cur, datetime.fromtimestamp(int(start)).strftime('%Y-%m-%d %H:%M:%S'), openPrice, highPrice, lowPrice, closePrice, volume)
             start = start + 86400
     db.close()
 
