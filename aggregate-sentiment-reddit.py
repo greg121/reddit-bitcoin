@@ -5,9 +5,9 @@ import dbhelper
 from datetime import timedelta, datetime
 import numpy as np
 
-def addToDatabase(db, cur, date, sentiment):
-    sql = "INSERT INTO `reddit-sentiment`(`id`, `date`, `sentiment`) \
-    VALUES (NULL, '%s', '%d')" % (date, sentiment)
+def addToDatabase(db, cur, date, sentiment, avg):
+    sql = "INSERT INTO `reddit-sentiment`(`id`, `date`, `sentiment`, `avg`) \
+    VALUES (NULL, '%s', '%d', '%f')" % (date, sentiment, avg)
     cur.execute(sql)
     db.commit()
 
@@ -24,15 +24,20 @@ def main():
     #start = "2014-03-23 08:00:00"
     db = dbhelper.connectToDb('mysql')
     cur = db.cursor()
-    for x in range(1500):
+    for x in range(837):
         print start
         cur = querySentiment(db, cur, start)
         result = cur.fetchall()
         sentiment = 0
+        list = []
         for y in range(int(cur.rowcount)):
             sentiment = sentiment + result[y][0]
+            list.append(result[y][0])
         print sentiment
-        addToDatabase(db, cur, start, sentiment)
+        avg = np.mean(list)
+        print avg
+        list = []
+        addToDatabase(db, cur, start, sentiment, avg)
         start = str(datetime.strptime(start, '%Y-%m-%d %H:%M:%S') + timedelta(days=1))
 
 
