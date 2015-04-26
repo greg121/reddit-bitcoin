@@ -5,14 +5,14 @@ import dbhelper
 from datetime import timedelta, datetime
 import numpy as np
 
-def addToDatabase(db, cur, date, sentiment, avg):
-    sql = "INSERT INTO `reddit-sentiment`(`id`, `date`, `sentiment`, `avg`) \
-    VALUES (NULL, '%s', '%d', '%f')" % (date, sentiment, avg)
+def addToDatabase(db, cur, date, sentiment, avg, weighted_avg):
+    sql = "INSERT INTO `reddit-sentiment`(`id`, `date`, `sentiment`, `avg`, `weighted_avg`) \
+    VALUES (NULL, '%s', '%d', '%f', '%f')" % (date, sentiment, avg, weighted_avg)
     cur.execute(sql)
     db.commit()
 
 def querySentiment(db, cur, start):
-    sql = "SELECT `score` FROM `submissions_copy` WHERE `date` BETWEEN '%s' AND '%s'" % \
+    sql = "SELECT `score`, `upvotes` FROM `submissions_copy` WHERE `date` BETWEEN '%s' AND '%s'" % \
     (start, str(datetime.strptime(start, '%Y-%m-%d %H:%M:%S') + timedelta(days=1)))
     cur.execute(sql)
     db.commit()
@@ -29,15 +29,20 @@ def main():
         cur = querySentiment(db, cur, start)
         result = cur.fetchall()
         sentiment = 0
+        weighted_sentiment = 0
         list = []
+        weighted_list = []
         for y in range(int(cur.rowcount)):
             sentiment = sentiment + result[y][0]
+            weighted_list.append(result[y][0]*result[y][1])
             list.append(result[y][0])
         print sentiment
         avg = np.mean(list)
-        print avg
+        weighted_avg = np.mean(weighted_list)
+        print weighted_avg
         list = []
-        addToDatabase(db, cur, start, sentiment, avg)
+        weighted_list = []
+        addToDatabase(db, cur, start, sentiment, avg, weighted_avg)
         start = str(datetime.strptime(start, '%Y-%m-%d %H:%M:%S') + timedelta(days=1))
 
 
